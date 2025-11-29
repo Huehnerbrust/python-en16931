@@ -385,16 +385,16 @@ class Entity:
         # TODO validate mail
         self._mail = mail
 
-    def is_valid(self):
+    def is_valid(self, peppol_standards=False):
         """Returns True if the Entity is valid.
 
         An entity is valid if it has a name, a country, valid ids,
         valid taxscheme and endpoint, and has an address.
         """
-        has_name = self._name is not None
+        has_name = (self._registration_name is not None) if peppol_standards else (self._name is not None)
         has_country = self._country is not None
-        has_ids = (self._party_legal_entity_id is not None) and (self._tax_scheme_id is not None)
-        has_valid_taxscheme = self._tax_scheme is not None
+        has_ids = (self._registration_name is not None) if peppol_standards else ((self._party_legal_entity_id is not None) and (self._tax_scheme_id is not None))
+        has_valid_taxscheme = (True) if peppol_standards else self._tax_scheme is not None
         has_endpoint = self._endpoint is not None
         has_address = self.postal_address is not None
         return (has_name and has_country and has_ids and has_valid_taxscheme
