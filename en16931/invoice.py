@@ -85,7 +85,7 @@ class Invoice:
 
     """
 
-    def __init__(self, invoice_id=None, customization_id=None, currency="EUR", from_xml=False):
+    def __init__(self, invoice_id=None, customization_id=None, currency="EUR", from_xml=False, peppol_standards=False):
         """Initialize an Invoice.
 
         This is the main class and entry point for creating an Invoice.
@@ -138,6 +138,7 @@ class Invoice:
         self.customization_id = customization_id or "urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0"
         self.profile_id = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
         self.invoice_type_code = 380
+        self.peppol_standards = peppol_standards
         self._issue_date = None
         self._due_date = None
         self._seller_party = None
@@ -154,10 +155,11 @@ class Invoice:
         self._discount_percent = None
         self._original_xml = None
         self._payment_means_code = None
+        
         self.lines = []
 
     @classmethod
-    def from_xml(cls, xml_path):
+    def from_xml(cls, xml_path, peppol_standards=False):
         """Import a XML invoice in EN16931 format.
 
 
@@ -184,7 +186,7 @@ class Invoice:
         invoice_id = get_from_xpath(root, "invoice_id")
         customization_id = get_from_xpath(root, "customization_id")
         currency = get_from_xpath(root, "currency")
-        invoice = cls(invoice_id=invoice_id, customization_id=customization_id, currency=currency, from_xml=True)
+        invoice = cls(invoice_id=invoice_id, customization_id=customization_id, currency=currency, from_xml=True, peppol_standards=peppol_standards)
         invoice._original_xml = xml.decode('utf8')
         invoice.issue_date = get_from_xpath(root, "invoice_issue_date")
         invoice.due_date = get_from_xpath(root, "invoice_due_date")
@@ -443,7 +445,7 @@ class Invoice:
         """Set the Entity with the role of AccountingSupplierParty.
         """
         if isinstance(party, Entity):
-            if party.is_valid():
+            if party.is_valid(peppol_standards=self.peppol_standards):
                 self._seller_party = party
             else:
                 raise ValueError("Invalid Entity")
@@ -479,7 +481,7 @@ class Invoice:
         """Set the Entity with the role of AccountingCustomerParty.
         """
         if isinstance(party, Entity):
-            if party.is_valid():
+            if party.is_valid(peppol_standards=self.peppol_standards):
                 self._buyer_party = party
             else:
                 raise ValueError("Invalid Entity")
